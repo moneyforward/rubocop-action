@@ -1,0 +1,30 @@
+{
+  "name": "rubocop-action",
+  "version": "0.0.0",
+  "description": "Analyze code statically using Rubocop in Github actions",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moneyforward/rubocop-action.git"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "rubocop"
+  ],
+  "author": "Money Forward, Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/moneyforward/rubocop-action/issues"
+  },
+  "homepage": "https://github.com/moneyforward/rubocop-action#readme",
+  "dependencies": {
+    "@moneyforward/sca-action-core": "0.0.1"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.22.1"
+  }
+}
