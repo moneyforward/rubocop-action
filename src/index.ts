@@ -1,25 +1,25 @@
-const stream = require('stream');
-const { analyzeCodeStatically, tool: { installGem, LineTransformStream } } = require('@moneyforward/sca-action-core');
+import stream from 'stream';
+import { analyzeCodeStatically, tool } from '@moneyforward/sca-action-core';
 
-(async () => {
-  process.exitCode |= await analyzeCodeStatically(
+(async (): Promise<void> => {
+  process.exitCode = await analyzeCodeStatically(
     'rubocop',
     ['--format', 'emacs', '-P'],
     undefined,
-    (() => {
-      const severityMap = {
-        R: 'Refactor',
-        C: 'Convention',
-        W: 'Warning',
-        E: 'Error',
-        F: 'Fatal',
-      };
+    ((): stream.Transform[] => {
+      const severityMap = new Map<string, string>([
+        ['R', 'Refactor'],
+        ['C', 'Convention'],
+        ['W', 'Warning'],
+        ['E', 'Error'],
+        ['F', 'Fatal'],
+      ]);
       const transformers = [
-        new LineTransformStream(),
+        new tool.LineTransformStream(),
         new stream.Transform({
           readableObjectMode: true,
           writableObjectMode: true,
-          transform: function (problem, encoding, done) {
+          transform: function (problem, _encoding, done): void {
             const regex = /^(.+):(\d+):(\d+): (R|C|W|E|F): (.+): (.*)$/;
             const [matches, file, line, column, severity, code, message] = regex.exec(problem) || [];
             done(null, matches ? {
@@ -27,7 +27,7 @@ const { analyzeCodeStatically, tool: { installGem, LineTransformStream } } = req
               line,
               column,
               severity: /(E|F)/.test(severity) ? 'error' : 'warning',
-              message: `[${severityMap[severity]}] ${code}: ${message}`,
+              message: `[${severityMap.get(severity)}] ${code}: ${message}`,
               code,
             } : undefined);
           }
@@ -36,7 +36,7 @@ const { analyzeCodeStatically, tool: { installGem, LineTransformStream } } = req
       transformers.reduce((p, c) => p.pipe(c));
       return transformers;
     })(),
-    installGem(false, 'rubocop'),
+    tool.installGem(false, 'rubocop'),
     2
   );
 })().catch(reason => {
