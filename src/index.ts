@@ -1,44 +1,12 @@
-import stream from 'stream';
-import { analyzeCodeStatically, tool } from '@moneyforward/sca-action-core';
+import Analyzer from './analyzer';
 
 (async (): Promise<void> => {
-  process.exitCode = await analyzeCodeStatically(
-    'rubocop',
-    ['--format', 'emacs', '-P'],
-    undefined,
-    ((): stream.Transform[] => {
-      const severityMap = new Map<string, string>([
-        ['R', 'Refactor'],
-        ['C', 'Convention'],
-        ['W', 'Warning'],
-        ['E', 'Error'],
-        ['F', 'Fatal'],
-      ]);
-      const transformers = [
-        new tool.LineTransformStream(),
-        new stream.Transform({
-          readableObjectMode: true,
-          writableObjectMode: true,
-          transform: function (problem, _encoding, done): void {
-            const regex = /^(.+):(\d+):(\d+): (R|C|W|E|F): (.+): (.*)$/;
-            const [matches, file, line, column, severity, code, message] = regex.exec(problem) || [];
-            done(null, matches ? {
-              file,
-              line,
-              column,
-              severity: /(E|F)/.test(severity) ? 'error' : 'warning',
-              message: `[${severityMap.get(severity)}] ${code}: ${message}`,
-              code,
-            } : undefined);
-          }
-        }),
-      ];
-      transformers.reduce((p, c) => p.pipe(c));
-      return transformers;
-    })(),
-    tool.installGem(false, 'rubocop'),
-    2
-  );
+  const options = JSON.parse(process.env.INPUT_OPTIONS || '[]');
+  const startingPoints = JSON.parse(process.env.INPUT_STARTING_POINTS || '[]');
+  const workingDirectory = process.env.INPUT_WORKING_DIRECTORY;
+  workingDirectory && process.chdir(workingDirectory);
+  const analyzer = new Analyzer(options, startingPoints);
+  process.exitCode = await analyzer.analyze();
 })().catch(reason => {
   console.log(`::error::${String(reason)}`);
   process.exit(1);
