@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/moneyforward/rubocop-action#readme",
   "dependencies": {
-    "@moneyforward/sca-action-core": "0.0.2"
+    "@moneyforward/sca-action-core": "0.0.5"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
