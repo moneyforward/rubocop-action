@@ -17,9 +17,6 @@ Pass `rubocop` a list of files and directories to analyze.
 
 Running `rubocop` with no arguments will analyze all Ruby source files in the warking directory.
 
-Specify the options in JSON array format.
-e.g.: `'["./Rakefile", "./app/"]'`
-
 ### `working_directory`
 
 Changes the current working directory of the Node.js process
