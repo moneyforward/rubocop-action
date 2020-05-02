@@ -3,18 +3,18 @@ name: Code review using Rubocop
 author: Money Forward, Inc.
 description: Analyze code statically using Rubocop in Github actions
 inputs:
+  files:
+    description: |
+      Pass `rubocop` a list of files and directories to analyze.
+
+      Running `rubocop` with no arguments will analyze all Ruby source files in the warking directory.
+    required: false
   options:
     description: |
       Changes `rubocop` command line options.
 
       Specify the options in JSON array format.
       e.g.: '["--fail-level", "W", "--display-only-fail-level-offenses"]'
-    required: false
-  starting_points:
-    description: |
-      Pass `rubocop` a list of files and directories to analyze.
-
-      Running `rubocop` with no arguments will analyze all Ruby source files in the warking directory.
     required: false
   working_directory:
     description: Changes the current working directory of the Node.js process

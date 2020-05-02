@@ -4,18 +4,18 @@ Analyze code statically by using [Rubocop](https://github.com/rubocop-hq/rubocop
 
 ## Inputs
 
+### `files`
+
+Pass `rubocop` a list of files and directories to analyze.
+
+Running `rubocop` with no arguments will analyze all Ruby source files in the warking directory.
+
 ### `options`
 
 Changes `rubocop` command line options.
 
 Specify the options in JSON array format.
 e.g.: `'["--fail-level", "W", "--display-only-fail-level-offenses"]'`
-
-### `starting_points`
-
-Pass `rubocop` a list of files and directories to analyze.
-
-Running `rubocop` with no arguments will analyze all Ruby source files in the warking directory.
 
 ### `working_directory`
 
