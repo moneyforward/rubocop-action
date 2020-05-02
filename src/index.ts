@@ -1,5 +1,6 @@
 import Analyzer from './analyzer';
 
+console.log('::echo::%s', process.env['RUNNER_DEBUG'] === '1' ? 'on' : 'off');
 (async (): Promise<void> => {
   const options = JSON.parse(process.env.INPUT_OPTIONS || '[]');
   const startingPoints = process.env.INPUT_STARTING_POINTS || '.';
