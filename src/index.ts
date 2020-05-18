@@ -1,14 +1,54 @@
-import Analyzer from './analyzer';
+import stream from 'stream';
+import util from 'util';
+import StaticCodeAnalyzer, { AnalyzerConstructorParameter, installer } from '@moneyforward/sca-action-core';
+import { transform } from '@moneyforward/stream-util'
 
-console.log('::echo::%s', process.env['RUNNER_DEBUG'] === '1' ? 'on' : 'off');
-(async (): Promise<void> => {
-  const files = process.env.INPUT_FILES || '.';
-  const options = JSON.parse(process.env.INPUT_OPTIONS || '[]');
-  const workingDirectory = process.env.INPUT_WORKING_DIRECTORY;
-  workingDirectory && process.chdir(workingDirectory);
-  const analyzer = new Analyzer(options);
-  process.exitCode = await analyzer.analyze(files);
-})().catch(reason => {
-  console.log(`::error::${String(reason)}`);
-  process.exit(1);
-});
+const debug = util.debuglog('@moneyforward/code-review-action-rubocop-plugin');
+
+export default class Analyzer extends StaticCodeAnalyzer {
+  private static readonly command = 'rubocop';
+
+  constructor(...args: AnalyzerConstructorParameter[]) {
+    super(Analyzer.command, args.map(String).concat(['--format', 'emacs', '-P']), undefined, 2);
+  }
+
+  protected async prepare(): Promise<void> {
+    console.log(`::group::Installing gems...`);
+    try {
+      await new installer.RubyGemsInstaller(false).execute([Analyzer.command]);
+    } finally {
+      console.log(`::endgroup::`)
+    }
+  }
+
+  protected createTransformStreams(): stream.Transform[] {
+    const severityMap = new Map<string, string>([
+      ['R', 'Refactor'],
+      ['C', 'Convention'],
+      ['W', 'Warning'],
+      ['E', 'Error'],
+      ['F', 'Fatal'],
+    ]);
+    return [
+      new transform.Lines(),
+      new stream.Transform({
+        objectMode: true,
+        readableObjectMode: true,
+        writableObjectMode: true,
+        transform: function (problem, _encoding, done): void {
+          const regex = /^(.+):(\d+):(\d+): (R|C|W|E|F): (.+): (.*)$/;
+          const [matches, file, line, column, severity, code, message] = regex.exec(problem) || [];
+          debug('%s', matches);
+          done(null, matches ? {
+            file,
+            line,
+            column,
+            severity: /(E|F)/.test(severity) ? 'error' : 'warning',
+            message: `[${severityMap.get(severity)}] ${code}: ${message}`,
+            code,
+          } : undefined);
+        }
+      }),
+    ];
+  }
+}
