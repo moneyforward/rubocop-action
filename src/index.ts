@@ -1,11 +1,14 @@
 import stream from 'stream';
 import util from 'util';
-import StaticCodeAnalyzer, { AnalyzerConstructorParameter, installer } from '@moneyforward/sca-action-core';
+import StaticCodeAnalyzer, { installer } from '@moneyforward/sca-action-core';
 import { transform } from '@moneyforward/stream-util'
+import { analyzer } from '@moneyforward/code-review-action';
+
+type AnalyzerConstructorParameter = analyzer.AnalyzerConstructorParameter;
 
 const debug = util.debuglog('@moneyforward/code-review-action-rubocop-plugin');
 
-export default class Analyzer extends StaticCodeAnalyzer {
+export default abstract class Analyzer extends StaticCodeAnalyzer {
   private static readonly command = 'rubocop';
 
   constructor(...args: AnalyzerConstructorParameter[]) {
